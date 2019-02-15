@@ -1,0 +1,66 @@
+FROM rhscl/s2i-base-rhel7:1
+
+# Description
+# This image provides an HAProxy 1.8 instance that is configurable through S2I
+
+# Exposed ports:
+# * 8080 - for http
+# * 8443 - for https
+
+EXPOSE 8080 8443
+
+ENV HAPROXY_VERSION=1.8 \
+    HAPROXY_VER_SHORT=18 \
+    NAME=haproxy \
+    PATH=$PATH:/opt/rh/rh-haproxy18/root/sbin
+
+ENV SUMMARY="Customizable HAProxy image" \
+    DESCRIPTION="HAProxy $HAPROXY_VERSION, available as a container, \
+for use in building a custom load-balancer, proxy, L7 switch, etc where needed."
+
+LABEL summary="${SUMMARY}" \
+      description="${DESCRIPTION}" \
+      io.k8s.description="${DESCRIPTION}" \
+      io.k8s.display-name="HAProxy ${HAPROXY_VERSION}" \
+      io.openshift.expose-services="8080:http,8443:https" \
+      io.openshift.tags="builder,${NAME},${NAME}${HAPROXY_VER_SHORT},rh-${NAME}${HAPROXY_VER_SHORT},${NAME}" \
+      io.openshift.s2i.scripts-url="image:///usr/libexec/s2i" \
+      io.s2i.scripts-url="image:///usr/libexec/s2i" \
+      name="rhscl/${NAME}-${HAPROXY_VER_SHORT}-rhel7" \
+      com.redhat.component="rh-${NAME}${HAPROXY_VER_SHORT}-container" \
+      version="${HAPROXY_VERSION}" \
+      help="For more information visit https://github.com/sclorg/s2i-${NAME}-container" \
+      usage="s2i build https://github.com/sclorg/s2i-haproxy-container.git --context-dir=${HAPROXY_VERSION}/test/test-app rhscl/${NAME}-${HAPROXY_VER_SHORT}-rhel7 sample-server" \
+      maintainer="SoftwareCollections.org <sclorg@redhat.com>"
+
+# Install HAProxy and rsyslog. rsyslog is to allow for HAProxy logs to stdout
+RUN prepare-yum-repositories rhel-server-rhscl-7-rpms && \
+    INSTALL_PKGS="rh-haproxy${HAPROXY_VER_SHORT} rsyslog" && \
+    yum install -y --setopt=tsflags=nodocs $INSTALL_PKGS --nogpgcheck && \
+    rpm -V $INSTALL_PKGS && \
+    yum clean all -y
+
+ENV HAPROXY_DEFAULT_BASE_PATH=/opt/rh/rh-haproxy${HAPROXY_VER_SHORT}
+
+ENV APP_DATA=${APP_ROOT}/src \
+    HAPROXY_CONTAINER_SCRIPTS_PATH=/usr/share/container-scripts/haproxy/ \
+    HAPROXY_SYSCONF_PATH=/etc${HAPROXY_DEFAULT_BASE_PATH} \
+    HAPROXY_VAR_PATH=/var${HAPROXY_DEFAULT_BASE_PATH} \
+    SCL_ENABLED=rh-haproxy${HAPROXY_VER_SHORT}
+
+ENV HAPROXY_CONFIGURATION_PATH=${HAPROXY_SYSCONF_PATH}/haproxy \
+    HAPROXY_CONF_FILE=haproxy.cfg
+
+# Copy the S2I scripts from the specific language image to $STI_SCRIPTS_PATH
+COPY ./s2i/bin/ $STI_SCRIPTS_PATH
+
+# Copy extra files to the image.
+COPY ./root/ /
+
+# Reset permissions of filesystem to default values
+RUN /usr/libexec/container-setup && rpm-file-permissions
+
+USER 1001
+
+# Set the default CMD to print the usage of the language image
+CMD $STI_SCRIPTS_PATH/usage

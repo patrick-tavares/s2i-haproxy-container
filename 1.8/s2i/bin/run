@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -o errexit
+set -o nounset
+
+readonly RSYSLOG_PID="${HAPROXY_VAR_PATH}/run/rsyslogd.pid"
+
+rm -f ${RSYSLOG_PID}
+rsyslogd -i ${RSYSLOG_PID}
+exec haproxy -f ${HAPROXY_CONFIGURATION_PATH}/${HAPROXY_CONF_FILE}

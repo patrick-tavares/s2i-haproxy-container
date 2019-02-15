@@ -1,0 +1,23 @@
+#!/bin/bash
+
+set -e
+
+# In order to drop the root user, we have to make some directories world
+# writeable as OpenShift default security model is to run the container under
+# random UID.
+
+setcap 'cap_net_bind_service=ep' ${HAPROXY_DEFAULT_BASE_PATH}/root/sbin/haproxy
+chown -R :0 ${HAPROXY_VAR_PATH}/lib/haproxy
+chmod -R g+w ${HAPROXY_VAR_PATH}/lib/haproxy
+
+mkdir -p ${HAPROXY_VAR_PATH}/run
+chown -R :0 ${HAPROXY_VAR_PATH}/run
+chmod -R g+w ${HAPROXY_VAR_PATH}/run
+
+mv -f /etc/haproxy.cfg ${HAPROXY_CONFIGURATION_PATH}
+
+mkdir /dev/log
+chown -R :0 /dev/log
+chmod -R g+w /dev/log
+
+sed -i "s%\$HAPROXY_VAR_PATH%${HAPROXY_VAR_PATH}%" /etc/rsyslog.conf
