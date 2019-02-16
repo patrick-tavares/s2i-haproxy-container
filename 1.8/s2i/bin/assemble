@@ -14,7 +14,7 @@ fi
 #  mv /tmp/artifacts/. ./
 #fi
 
-if [ -f haproxy.cfg ]; then
+if [ -f /tmp/src/haproxy.cfg ]; then
   echo "---> Copying any haproxy.cfg file..."
   mv /tmp/src/haproxy.cfg ${HAPROXY_CONFIGURATION_PATH}
 fi

@@ -16,6 +16,8 @@ chmod -R g+w ${HAPROXY_VAR_PATH}/run
 
 mv -f /etc/haproxy.cfg ${HAPROXY_CONFIGURATION_PATH}
 
+chmod -R a+rwx ${HAPROXY_CONFIGURATION_PATH}
+
 mkdir /dev/log
 chown -R :0 /dev/log
 chmod -R g+w /dev/log
