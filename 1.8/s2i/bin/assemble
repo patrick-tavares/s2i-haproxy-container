@@ -1,1 +1,20 @@
 #!/bin/bash
+
+export HAPROXY_CONFIGURATION_PATH=${HAPROXY_CONFIGURATION_PATH:-/etc/opt/rh/rh-haproxy18}
+
+# If the assemble script is executed with the '-h' flag, print the usage.
+if [[ "$1" == "-h" ]]; then
+        exec /usr/libexec/s2i/usage
+fi
+
+# Restore artifacts from the previous build (if they exist).
+#
+#if [ "$(ls /tmp/artifacts/ 2>/dev/null)" ]; then
+#  echo "---> Restoring build artifacts..."
+#  mv /tmp/artifacts/. ./
+#fi
+
+if [ -f haproxy.cfg ]; then
+  echo "---> Copying any haproxy.cfg file..."
+  mv /tmp/src/haproxy.cfg ${HAPROXY_CONFIGURATION_PATH}
+fi
