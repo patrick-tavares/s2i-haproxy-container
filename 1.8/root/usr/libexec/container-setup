@@ -23,3 +23,5 @@ chown -R :0 /dev/log
 chmod -R g+w /dev/log
 
 sed -i "s%\$HAPROXY_VAR_PATH%${HAPROXY_VAR_PATH}%" /etc/rsyslog.conf
+
+npm install http-server
