@@ -19,7 +19,9 @@ if [ -f /tmp/src/haproxy.cfg ]; then
   mv /tmp/src/haproxy.cfg ${HAPROXY_CONFIGURATION_PATH}
 fi
 
-for f in /tmp/src/*.http; do
-  echo "---> Copying any custom error http files..."
-  mv ${f} ${HAPROXY_CONFIGURATION_PATH}
+for f in "./*.http"; do
+  if [ -e $f ]; then
+    echo "---> Copying any custom error http files..."
+    mv ${f} ${HAPROXY_CONFIGURATION_PATH}
+  fi
 done
